@@ -1,0 +1,5 @@
+{
+  "model type": "BERT embedding, 
+  SentimentDLApproach", 
+  "f1 score": 0.6723225870845393, 
+  "time": 3391.8650529384613}
