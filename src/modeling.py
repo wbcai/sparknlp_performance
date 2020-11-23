@@ -161,6 +161,39 @@ def fit_model(pipeline, train, test, model_description):
     return pipelineModel
 
 
+def make_prediction_with_pretrained(train, model_description):
+
+    pretrained_pipeline = PretrainedPipeline("analyze_sentimentdl_use_twitter")
+
+    preds_df = (
+        pretrained_pipeline
+        .transform(train)
+        .withColumn("result", sf.col("sentiment.result").getItem(0))
+        .withColumn("result_binary", sf.when(sf.col("result") == "positive", 1.0).otherwise(0.0))
+        .select("label", "result_binary")
+    ).toPandas()
+
+    accuracy = accuracy_score(preds_df["label"], preds_df["result_binary"])
+    precision = precision_score(preds_df["label"], preds_df["result_binary"])
+    recall = recall_score(preds_df["label"], preds_df["result_binary"])
+
+    results_dict = {
+      "model description": model_description,
+      "accuracy": accuracy,
+      "precision": precision,
+      "recall": recall,
+    }
+
+    results_save_path = os.path.join(
+      OUTPUT_PATH,
+      "PretrainedTwitter.json"
+    )
+
+    save_dict_as_json(results_dict, results_save_path)
+
+    return results_dict
+
+
 if __name__ == '__main__':
 
     spark = sparknlp.start()
